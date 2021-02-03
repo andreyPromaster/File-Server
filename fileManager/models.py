@@ -9,5 +9,6 @@ class UserContainer(models.Model):
 
 
 class Content(models.Model):
-    name_of_blob = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+    container = models.ForeignKey(UserContainer, on_delete=models.PROTECT)
+    name_of_blob = models.CharField(max_length=43)
     unique_link_to_blob = models.UUIDField(default=uuid.uuid4, unique=True)
