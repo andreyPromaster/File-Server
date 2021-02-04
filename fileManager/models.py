@@ -5,7 +5,7 @@ from django.db import models
 
 class UserContainer(models.Model):
     email = models.EmailField(max_length=100, unique=True)
-    container = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+    name_container = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
 
 
 class Content(models.Model):
