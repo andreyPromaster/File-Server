@@ -1,3 +1,4 @@
+import os
 import uuid
 
 from azure.storage.blob import BlobServiceClient
@@ -29,14 +30,6 @@ class AzureStorageManager:
     def download_file_from_storage(self, container, file_name):
         blob_client = self.blob_service_client.get_blob_client(container=container, blob=file_name)
         data = blob_client.download_blob().readall()
-        print(type(data))
-        with open(file_name, "wb") as f:
-            f.write(data)
+        return data
 
-# # Download the blob to a local file
-# # Add 'DOWNLOAD' before the .txt extension so you can see both files in the data directory
-# download_file_path = os.path.join(local_path, str.replace(local_file_name, '.txt', 'DOWNLOAD.txt'))
-# print("\nDownloading blob to \n\t" + download_file_path)
-#
-# with open(download_file_path, "wb") as download_file:
-#     download_file.write(blob_client.download_blob().readall())
+

@@ -1,13 +1,19 @@
+import os
+import tempfile
 import uuid
+from io import BytesIO
 
 from django.shortcuts import render
+
+
 from FileServer import settings
 from django.http import HttpResponseRedirect, HttpResponse, FileResponse
 
 from .azure_storage_services import AzureStorageManager
 from .forms import UploadFileForm
 from .models import UserContainer, Content
-
+from django.db.models import signals
+from django.dispatch import receiver
 
 def index(request):
     print(settings.CONNECTION_STRING_TO_AZURE_STORAGE)
@@ -17,9 +23,13 @@ def index(request):
 def download_file(request, unique_link_to_blob):
     file_storage = Content.objects.get(unique_link_to_blob=unique_link_to_blob)
     storage_manager = AzureStorageManager()
-    opened_file_for_download = storage_manager.download_file_from_storage(str(file_storage.container.name_container),
-                                                                          str(file_storage.name_of_blob))
-    return FileResponse(open(str(file_storage.name_of_blob), 'rb'), as_attachment=True, filename=str(file_storage.name_of_blob))
+
+    data = storage_manager.download_file_from_storage(str(file_storage.container.name_container),
+                                                      str(file_storage.name_of_blob))
+
+    return FileResponse(BytesIO(data),
+                        as_attachment=True,
+                        filename=str(file_storage.name_of_blob))
 
 
 def upload_file(request):
