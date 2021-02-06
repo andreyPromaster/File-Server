@@ -1,7 +1,7 @@
-import os
 import uuid
 
-from azure.storage.blob import BlobServiceClient, BlobClient
+from azure.storage.blob import BlobServiceClient
+import tempfile
 from FileServer import settings
 
 
@@ -16,6 +16,9 @@ class AzureStorageManager:
     def __create_unique_string(self):
         return str(uuid.uuid4())
 
+    def get_current_container(self):
+        return self.container_name
+
     def upload_file_to_container(self, file, file_name):
         blob_client = self.blob_service_client.get_blob_client(container=self.container_name, blob=file_name)
 
@@ -23,6 +26,12 @@ class AzureStorageManager:
         for chunk in file.chunks():
             blob_client.upload_blob(chunk)
 
+    def download_file_from_storage(self, container, file_name):
+        blob_client = self.blob_service_client.get_blob_client(container=container, blob=file_name)
+        data = blob_client.download_blob().readall()
+        print(type(data))
+        with open(file_name, "wb") as f:
+            f.write(data)
 
 # # Download the blob to a local file
 # # Add 'DOWNLOAD' before the .txt extension so you can see both files in the data directory
