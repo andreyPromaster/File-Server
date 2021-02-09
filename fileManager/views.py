@@ -36,25 +36,44 @@ def upload_file(request):
     if request.method == 'POST':
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
-            manager = AzureStorageManager()
-            manager.create_container()
+            current_container = ""
+            current_email = form.cleaned_data["email"]
+
+            if current_email != "":
+                query = UserContainer.objects.filter(email=current_email)
+                if query.exists():
+                    current_container = query[0]
+            else:
+                if request.COOKIES.get("container") is not None:
+                    query = UserContainer.objects.filter(name_container=request.COOKIES.get("container"))
+                    if query.exists():
+                        current_container = query[0]
+
+            manager = ""
+            if current_container == "":
+                manager = AzureStorageManager()
+                manager.create_container()
+                current_container = UserContainer()
+                current_container.email = current_email
+                current_container.name_container = manager.get_current_container()
+                current_container.save()
+            else:
+                manager = AzureStorageManager(current_container)
+
             file_name = str(uuid.uuid4())
             file = request.FILES['file']
             file_name = file_name + "." + file.name.split(".")[-1]
             manager.upload_file_to_container(file, file_name)
 
-            container = UserContainer()
-            container.email = form.cleaned_data["email"]  # ?
-            container.name_container = manager.get_current_container()
-            container.save()
-
             blob = Content()
-            blob.container = container
+            blob.container = current_container
             blob.name_of_blob = file_name
             blob.unique_link_to_blob = str(uuid.uuid4())
             blob.save()
 
-            return HttpResponse('<p>ok</p>')
+            response = render(request, 'fileManager/index.html')
+            response.set_cookie(key='container', value=current_container)
+            return response
     else:
         form = UploadFileForm()
     return render(request, 'fileManager/index.html', {'form': form})
