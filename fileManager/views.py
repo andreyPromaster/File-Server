@@ -5,7 +5,6 @@ from io import BytesIO
 
 from django.shortcuts import render
 
-
 from FileServer import settings
 from django.http import HttpResponseRedirect, HttpResponse, FileResponse
 
@@ -14,6 +13,7 @@ from .forms import UploadFileForm
 from .models import UserContainer, Content
 from django.db.models import signals
 from django.dispatch import receiver
+
 
 def index(request):
     print(settings.CONNECTION_STRING_TO_AZURE_STORAGE)
@@ -49,7 +49,6 @@ def upload_file(request):
                     if query.exists():
                         current_container = query[0]
 
-            manager = ""
             if current_container == "":
                 manager = AzureStorageManager()
                 manager.create_container()
@@ -58,7 +57,7 @@ def upload_file(request):
                 current_container.name_container = manager.get_current_container()
                 current_container.save()
             else:
-                manager = AzureStorageManager(current_container)
+                manager = AzureStorageManager(str(current_container.name_container))
 
             file_name = str(uuid.uuid4())
             file = request.FILES['file']
@@ -71,8 +70,9 @@ def upload_file(request):
             blob.unique_link_to_blob = str(uuid.uuid4())
             blob.save()
 
-            response = render(request, 'fileManager/index.html')
-            response.set_cookie(key='container', value=current_container)
+            form = UploadFileForm()
+            response = render(request, 'fileManager/index.html', {'form': form})
+            response.set_cookie(key='container', value=manager.get_current_container(), max_age=50000000)
             return response
     else:
         form = UploadFileForm()
