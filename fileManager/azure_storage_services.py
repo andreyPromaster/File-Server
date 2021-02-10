@@ -25,8 +25,7 @@ class AzureStorageManager:
         blob_client = self.blob_service_client.get_blob_client(container=self.container_name, blob=file_name)
 
         # Upload the created file
-        for chunk in file.chunks():
-            blob_client.upload_blob(chunk)
+        blob_client.upload_blob(file.read())
 
     def download_file_from_storage(self, container, file_name):
         blob_client = self.blob_service_client.get_blob_client(container=container, blob=file_name)

@@ -4,6 +4,7 @@ import uuid
 from io import BytesIO
 
 from django.shortcuts import render
+from django.urls import reverse
 
 from FileServer import settings
 from django.http import HttpResponseRedirect, HttpResponse, FileResponse
@@ -71,7 +72,8 @@ def upload_file(request):
             blob.save()
 
             form = UploadFileForm()
-            response = render(request, 'fileManager/index.html', {'form': form})
+            url = reverse("download_file", kwargs={"unique_link_to_blob": blob.unique_link_to_blob})
+            response = render(request, 'fileManager/index.html', {'form': form, "uploaded_file_url": url})
             response.set_cookie(key='container', value=manager.get_current_container(), max_age=50000000)
             return response
     else:
