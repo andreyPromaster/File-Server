@@ -3,7 +3,7 @@ import tempfile
 import uuid
 from io import BytesIO
 
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
 
 from FileServer import settings
@@ -22,7 +22,7 @@ def index(request):
 
 
 def download_file(request, unique_link_to_blob):
-    file_storage = Content.objects.get(unique_link_to_blob=unique_link_to_blob)
+    file_storage = get_object_or_404(Content, unique_link_to_blob=unique_link_to_blob)
     storage_manager = AzureStorageManager()
 
     data = storage_manager.download_file_from_storage(str(file_storage.container.name_container),
