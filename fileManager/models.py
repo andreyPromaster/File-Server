@@ -7,6 +7,9 @@ class UserContainer(models.Model):
     email = models.EmailField(max_length=100, null=True)
     name_container = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
 
+    def __str__(self):
+        return self.email + " Name: " + str(self.name_container)
+
 
 class Content(models.Model):
     container = models.ForeignKey(UserContainer, on_delete=models.PROTECT)

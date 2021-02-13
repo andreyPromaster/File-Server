@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'fileManager.apps.FilemanagerConfig',
+    'crispy_forms',
 ]
 
 MIDDLEWARE = [
@@ -114,6 +115,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = '/static/'
+
+CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
 CONNECTION_STRING_TO_AZURE_STORAGE = os.getenv("CONNECTION_STRING_TO_AZURE_STORAGE")
 
