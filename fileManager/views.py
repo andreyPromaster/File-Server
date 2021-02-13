@@ -15,6 +15,8 @@ from .models import UserContainer, Content
 from django.db.models import signals
 from django.dispatch import receiver
 
+from .services import get_data_from_azure_storage
+
 
 def index(request):
     print(settings.CONNECTION_STRING_TO_AZURE_STORAGE)
@@ -22,15 +24,8 @@ def index(request):
 
 
 def download_file(request, unique_link_to_blob):
-    file_storage = get_object_or_404(Content, unique_link_to_blob=unique_link_to_blob)
-    storage_manager = AzureStorageManager()
-
-    data = storage_manager.download_file_from_storage(str(file_storage.container.name_container),
-                                                      str(file_storage.name_of_blob))
-
-    return FileResponse(BytesIO(data),
-                        as_attachment=True,
-                        filename=str(file_storage.name_of_blob))
+    return FileResponse(get_data_from_azure_storage(unique_link_to_blob),
+                        as_attachment=True)
 
 
 def upload_file(request):
