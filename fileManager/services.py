@@ -67,7 +67,7 @@ def upload_file_to_azure_container(container_name, file, file_name):
     manager.upload_file_to_container(file, file_name)
 
 
-def find_container_or_create(request, email):
+def find_or_create_container(request, email):
     """Find info about azure container in cookies or email and
     return container object """
     if email != "":

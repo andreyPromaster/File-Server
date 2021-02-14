@@ -118,6 +118,17 @@ STATIC_URL = '/static/'
 
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
+EMAIL_HOST = 'smtp.yandex.ru'
+
+EMAIL_PORT = 587
+
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
+
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
+
+EMAIL_USE_TLS = True
+
+
 CONNECTION_STRING_TO_AZURE_STORAGE = os.getenv("CONNECTION_STRING_TO_AZURE_STORAGE")
 
 from dotenv import load_dotenv
