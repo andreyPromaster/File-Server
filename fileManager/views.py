@@ -15,7 +15,9 @@ from .models import UserContainer, Content
 from django.db.models import signals
 from django.dispatch import receiver
 
-from .services import get_data_from_azure_storage
+from .services import get_data_from_azure_storage, get_azure_container_by_email, get_azure_container_by_cookies, \
+    create_container_in_db, create_related_container_to_azure_storage, upload_file_to_azure_container, \
+    create_file_name_for_uploaded_file, create_blob_into_container, find_container_or_create
 
 
 def index(request):
@@ -32,44 +34,21 @@ def upload_file(request):
     if request.method == 'POST':
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
-            current_container = ""
             current_email = form.cleaned_data["email"]
 
-            if current_email != "":
-                query = UserContainer.objects.filter(email=current_email)
-                if query.exists():
-                    current_container = query[0]
-            else:
-                if request.COOKIES.get("container") is not None:
-                    query = UserContainer.objects.filter(name_container=request.COOKIES.get("container"))
-                    if query.exists():
-                        current_container = query[0]
+            current_container = find_container_or_create(request, current_email)
 
-            if current_container == "":
-                manager = AzureStorageManager()
-                manager.create_container()
-                current_container = UserContainer()
-                current_container.email = current_email
-                current_container.name_container = manager.get_current_container()
-                current_container.save()
-            else:
-                manager = AzureStorageManager(str(current_container.name_container))
+            file_name = create_file_name_for_uploaded_file(request.FILES['file'].name)
+            upload_file_to_azure_container(str(current_container.name_container),
+                                           request.FILES['file'],
+                                           file_name)
 
-            file_name = str(uuid.uuid4())
-            file = request.FILES['file']
-            file_name = file_name + "." + file.name.split(".")[-1]
-            manager.upload_file_to_container(file, file_name)
-
-            blob = Content()
-            blob.container = current_container
-            blob.name_of_blob = file_name
-            blob.unique_link_to_blob = str(uuid.uuid4())
-            blob.save()
+            blob = create_blob_into_container(current_container, file_name)
 
             form = UploadFileForm()
             url = reverse("download_file", kwargs={"unique_link_to_blob": blob.unique_link_to_blob})
             response = render(request, 'fileManager/index.html', {'form': form, "uploaded_file_url": url})
-            response.set_cookie(key='container', value=manager.get_current_container(), max_age=50000000)
+            response.set_cookie(key='container', value=current_container.name_container, max_age=50000000)
             return response
     else:
         form = UploadFileForm()
